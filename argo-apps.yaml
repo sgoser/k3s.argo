@@ -1,0 +1,46 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-wordpress
+  namespace: argocd
+spec:
+  destination:
+    namespace: wordpress
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    chart: wordpress
+    helm:
+      parameters:
+      - name: mariadb.enabled
+        value: "false"
+      - name: externalDatabase.host
+        value: 192.168.201.4
+      - name: externalDatabase.existingSecret
+        value: argo-secrets-wordpress
+      - name: externalDatabase.database
+        value: wordpress
+      - name: global.storageClass
+        value: nfs-wordpress
+      - name: existingSecret
+        value: argo-secrets-wordpress
+      - name: wordpressEmail
+        value: sgoser@gmail.com
+      - name: ingress.enabled
+        value: "true"
+      - name: ingress.hostname
+        value: argo-wp.k8s-4.sa
+      - name: ingress.ingressClassName
+        value: nginx
+      - name: ingress.pathType
+        value: Prefix
+      - name: service.type
+        value: ClusterIP
+      valueFiles:
+      - values.yaml
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 15.2.22
+  syncPolicy:
+    automated:
+      prune: true
